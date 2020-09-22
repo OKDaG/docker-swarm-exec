@@ -212,8 +212,7 @@ def run_container(  image,
     # (debug) display log - works only if helper runs on this node
     #TODO: change when 'docker service logs' becomes commonplace; see https://github.com/moby/moby/issues/24812
     #print(_task_log(task), file = sys.stderr) #@#@
-    print(_task_log(task), file = sys.stderr)
-
+    
     # remember task outcome & destroy service
     status = task.get('Status', {})
     svc.remove()
