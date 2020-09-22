@@ -158,10 +158,13 @@ def _service_log(service_id):
         return '(no service id)'
     
     c = gbl_api.services.get(service_id)
-    binlog = c.logs(stdout = True, stderr = True)
-#    txtlog = binlog.decode('utf-8')
+    generator = c.logs(stdout = True, stderr = True)
+    for chunk in generator:
+        if 'stream' in chunk:
+            for line in chunk['stream'].splitlines():
+                txtlog += line
 
-    return binlog
+    return txtlog
 
 def run_container(  image,
                     node,
