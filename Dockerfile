@@ -1,7 +1,5 @@
 FROM ubuntu:16.04
 
-LABEL maintainer "Datagrid Systems, Inc. <support@datagridsys.com>"
-
 WORKDIR /app
 
 RUN apt-get update && \
@@ -16,6 +14,6 @@ RUN apt-get update && \
     pip3 install --upgrade pip && \
     pip3 install docker
 
-COPY plugin/swarm-exec lib/skpp.py /app/
+COPY plugin/swarm-exec /app/
 
 ENTRYPOINT [ "./swarm-exec" ]

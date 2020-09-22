@@ -41,13 +41,10 @@ from copy import copy
 
 import docker  # Docker engine SDK
 
-import skpp    # Skopos plugin helper
-
-
 # --- Helpful definitions
 
 DFLT_TIMEOUT = 300 # (seconds) max. time to allow command to run
-DFLT_IMAGE = 'datagridsys/skopos-plugin-swarm-exec:latest'
+DFLT_IMAGE = 'sjurkuhn/docker-swarm-exec:latest'
 
 ACTIVE_STATES = {
     'new',
@@ -72,38 +69,6 @@ class UserError(Exception):
 # exception to use when reporting command errors
 class CmdError(Exception):
     pass
-
-# Skopos action decorator
-def action(f):
-    def w(**kw):
-        _connect_api(manager = True)
-
-        # invoke action function
-        exc = None
-        try:
-            ret = f(**kw)
-        except docker.errors.DockerException as e:
-            exc = ApiError(e.args[0])
-            ret = None
-        except Exception as e:
-            exc = e
-            ret = None
-        if ret is None: ret = {}    # allow actions to return None but keep return value as a dict
-        #err = None if not exc else exc.args[0]   # TODO: capture and save the traceback
-        #_log_action(f.__name__, kw, res = ret, err = err)
-        if exc:
-            raise exc
-
-        # merge ret into the original bus and print
-        kw.update(ret)
-        return kw
-
-    # make it look nice on help(f)
-    w.__doc__  = f.__doc__
-    w.__name__ = f.__name__
-    return skpp.action(w)
-
-# ---
 
 def _connect_api(manager=False):
     global gbl_api
@@ -247,6 +212,7 @@ def run_container(  image,
     # (debug) display log - works only if helper runs on this node
     #TODO: change when 'docker service logs' becomes commonplace; see https://github.com/moby/moby/issues/24812
     #print(_task_log(task), file = sys.stderr) #@#@
+    print(_task_log(task), file = sys.stderr)
 
     # remember task outcome & destroy service
     status = task.get('Status', {})
@@ -314,42 +280,6 @@ def cmd_container_exec(args):
     print(out.decode())
     sys.exit(code)
 
-@action    # Skopos plugin action
-def inst_exec(**args):
-    # extract task ID
-    inst = args['inst']     # Skopos instance list (usually a single element)
-    if len(inst) != 1:
-        skpp.die('this plugin works only with a single instance at a time, got {}'.format(len(inst))) # may be 0
-    inst = inst[0]          # re-bind to the only instance
-    task_id = inst['id']    # must exist (with docker-swarm core plugin, instance ID is the task ID)
-
-    # extract command (and parse into a list if provided as JSON array)
-    assert 'command' in args, '"command" argument must be provided in order to execute command in task'
-    cmd = args['command']
-    assert isinstance(cmd, six.string_types)
-    if cmd.startswith('['):
-        cmd = json.loads(cmd) # load json-serialized array
-    else:
-        cmd = args['command'].split(' ')    # simple split on spaces
-
-    # determine helper image and timeout
-    if 'image' in args:
-        img = args['image']
-    else:
-        img = DFLT_IMAGE
-    if 'timeout' in args:
-        tout = args['timeout']
-    else:
-        tout = DFLT_TIMEOUT
-
-    # execute requested command in the specified task via helper
-    try:
-        task_exec(task_id, cmd, timeout = tout, helper_image = img, debug = True)
-    except (ApiError, CmdError, UserError) as e:
-        skpp.die(e.args[0])
-
-    # return empty data, no instance changes expected
-    return {}
 
 # --- Main Entry Point -------------------------------------------------------
 
@@ -373,6 +303,3 @@ Usage:
         cmd_task_exec(args[1:])
     elif args[0] == 'exec':
         cmd_container_exec(args[1:])
-    else:
-        skpp.run("swarm-exec", globals())   # run as a Skopos plugin
-
