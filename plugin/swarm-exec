@@ -159,9 +159,9 @@ def _service_log(service_id):
     
     c = gbl_api.services.get(service_id)
     binlog = c.logs(stdout = True, stderr = True)
-    txtlog = binlog.decode('utf-8')
+#    txtlog = binlog.decode('utf-8')
 
-    return txtlog
+    return binlog
 
 def run_container(  image,
                     node,
