@@ -158,11 +158,7 @@ def _service_log(service_id):
         return '(no service id)'
     
     c = gbl_api.services.get(service_id)
-    generator = c.logs(stdout = True, stderr = True)
-    for chunk in generator:
-        if 'stream' in chunk:
-            for line in chunk['stream'].splitlines():
-                txtlog += line
+    txtlog = list(c.logs(stdout = True, stderr = True))
 
     return txtlog
 
