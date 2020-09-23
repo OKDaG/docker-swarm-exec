@@ -158,7 +158,10 @@ def _service_log(service_id):
         return '(no service id)'
     
     c = gbl_api.services.get(service_id)
-    txtlog = list(c.logs(stdout = True, stderr = True))
+    binlog = c.logs(stdout = True, stderr = True)
+    txtlog = ''
+    for line in binlog:
+        txtlog += line.decode('utf-8')
 
     return txtlog
 
