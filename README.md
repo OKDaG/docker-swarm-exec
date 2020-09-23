@@ -1,4 +1,4 @@
-# skopos-plugin-swarm-exec
+# docker-swarm-exec
 
 [![Join the chat at https://gitter.im/datagridsys/skopos](https://badges.gitter.im/datagridsys/skopos.svg)](https://gitter.im/datagridsys/skopos?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -18,8 +18,6 @@ The need for this project is expected to go away when the
 [Support for executing into a task #1895](https://github.com/docker/swarmkit/issues/1895)
 issue is resolved in the Docker swarm project and the same capability becomes available
 directly in the Docker swarm API and command-line client. 
-
-The exec capability, together with `docker service logs` (already included in Docker 17.05.0-ce as non-experimental), a `docker service signal`, as well as pause/resume, will provide closure of the container operation functions between plain Docker containers and services that run containers on a swarm cluster.
 
 ## Standalone Use
 
@@ -46,11 +44,11 @@ Starting from a task ID and a command to execute, here are the steps that are ta
 
 1. Obtain the node ID on which the target task is running, as well as the container ID
 of the task on that node
-1. Create a temporary service, using the same container image, and a scheduling constraint
+2. Create a temporary service, using the same container image, and a scheduling constraint
 that places the task of the temporary service on the same node where the target task is
-1. Execute the equivalent of a `docker exec` command using the node-local Docker engine API
-1. Upon completion of the command, terminate the temporary service, propagating the exit code of the executed command
-1. Upon termination of the temporary service, extract the exit code and return it
+3. Execute the equivalent of a `docker exec` command using the node-local Docker engine API
+4. Upon completion of the command, terminate the temporary service, propagating the exit code of the executed command
+5. Upon termination of the temporary service, extract the exit code and return it
 
 ## License
 
