@@ -14,6 +14,6 @@ RUN apt-get update && \
     pip3 install --upgrade pip && \
     pip3 install docker
 
-COPY plugin/swarm-exec /app/
+COPY swarm-exec /app/
 
 ENTRYPOINT [ "./swarm-exec" ]
